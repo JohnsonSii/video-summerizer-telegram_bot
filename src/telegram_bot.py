@@ -52,7 +52,7 @@ async def add_user_if_not_exist(conn: MySQLClientConnection, user_id, username):
 
 class Bot:
 
-    def __init__(self, bot_token, db_config) -> None:
+    def __init__(self, bot_token, db_config, redis_config) -> None:
         # builder = ApplicationBuilder().token(bot_token)
         # self.application = builder.build()
         # loop = asyncio.get_event_loop()
@@ -67,7 +67,7 @@ class Bot:
         loop.run_until_complete(self.set_menu())
         self.add_handlers()
         self.redis_client = redis.Redis(
-            host='localhost', port=6379, decode_responses=True)
+            host=redis_config['host'], port=redis_config['port'], decode_responses=True)
         self.video_pool_name = "video_pool"
         
 

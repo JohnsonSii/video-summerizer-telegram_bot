@@ -25,7 +25,7 @@ async def main():
     config = json.load(open(path, 'r', encoding='utf-8'))
 
     redis_client = redis.Redis(
-        host='localhost', port=6379, decode_responses=True)
+        host=config['redis_info']['host'], port=config['redis_info']['port'], decode_responses=True)
     # redis_client.flushdb()
     video_pool_name = "video_pool"
 

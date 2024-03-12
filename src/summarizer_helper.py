@@ -254,21 +254,3 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
             conn.update_data_to_database("user_channel", {"newest_video_time": new_video_time},
                                          {"tg_user_id": video["tg_user_id"], "channel_url": channel})
 
-
-async def main():
-    import aiosqlite
-    import json
-    import sqlite3
-    import time
-    import asyncio
-    lock = asyncio.Lock()
-
-    path = "config.json"
-    with open(path, 'r') as f:
-        config = json.load(f)
-    video_pool = {}
-    async with aiosqlite.connect(config['db_path']) as conn:
-        conn.row_factory = sqlite3.Row  # return dict instead of tuple
-        while True:
-            await update_video_pool(conn, video_pool, lock)
-    print(video_pool)

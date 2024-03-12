@@ -8,6 +8,7 @@ class MySQLClientConnection:
         self.conn: MySQLdb.Connection = \
             MySQLdb.connect(host=mysql_info_config['db_host'],
                             user=mysql_info_config['db_user'],
+                            port=mysql_info_config['db_port'],
                             password=mysql_info_config['db_password'],
                             db=mysql_info_config['db_name'],
                             charset='utf8mb4')
