@@ -8,9 +8,6 @@ import json
 import telegra_ph
 import utils
 
-__DEV__ = False
-__DEV_COUNT__ = 0
-
 
 async def video_pool_update_task(t, config, redis_client, video_pool_name):
     print("Running video_pool_update_task")
@@ -106,23 +103,17 @@ async def get_video_list(conn, channel):
         time_tuple = time.strptime(pubDate, "%Y-%m-%dT%H:%M:%S.%fZ")
         t1 = time.mktime(time_tuple)
 
-        if not __DEV__:
-            if t1 <= old_video_time:  # only process video published after last processed video
-                break
-            if now - t1 > 3600 * 24:  # only process video published in 1 day
-                break
+
+        if t1 <= old_video_time:  # only process video published after last processed video
+            break
+        if now - t1 > 3600 * 24:  # only process video published in 1 day
+            break
 
         print(f"channel {channel['channel_name']}: ",
               f'New video {item["title"]} found, adding to video pool!')
         result.append({"title": item["title"], "link": item["url"], "pubDate": t1, "tg_user_id": channel["tg_user_id"],
                        "channel_name": channel["channel_name"]})  # use timestamp as pubDate
 
-        if __DEV__:
-            global __DEV_COUNT__
-            if __DEV_COUNT__ == 1:
-                break
-            else:
-                __DEV_COUNT__ += 1
 
     return result
 
