@@ -95,11 +95,3 @@ class MySQLClientConnection:
             cursor.execute(update_query, values)
             self.conn.commit()
 
-
-if __name__ == '__main__':
-    import json
-
-    config = json.load(open('../../video-summerizer-config.json', 'r', encoding='utf-8'))
-    conn = MySQLClientConnection(config['mysql_info'])
-    result = conn.select_data_from_database('user')
-    print(result)

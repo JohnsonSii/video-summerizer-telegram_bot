@@ -1,10 +1,17 @@
 from telegram_bot import Bot
 import json
 import os
+import argparse
+
+parser = argparse.ArgumentParser(
+    prog='RunBot',
+    description='Telegram bot for video summarization')
+
+parser.add_argument('-c', '--config', type=str)
+args = parser.parse_args()
 
 if __name__ == "__main__":
-    # path = "../video-summerizer-config.json"
-    path = r"C:\Users\Developer\Documents\Recent\video-summerizer-telegram_bot\video-summerizer-config.json"
+    path = args.config
 
     # read config file with encoding detection
     config = json.load(open(path, 'r', encoding='utf-8'))

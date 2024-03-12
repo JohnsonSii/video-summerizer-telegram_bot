@@ -191,25 +191,3 @@ class SrtSummarizer:
         else:
             res = self.summerize_segment(tmp_str, self.max_token_count-token_count )
             return res
-
-
-if __name__ == "__main__": 
-    ### usage examples
-    import time
-    import json
-    t0=time.time()
-
-    srt=pd.read_csv('d:/abc.csv')
-    path=r"C:\Users\liuqimin\video-summerizer-config.json"
-    with open(path, 'r') as f:
-        config=json.load(f)
-        srt_summarize = SrtSummarizer(config["openai"], [] )
-    os.environ["HTTP_PROXY"] = config["proxies"]["http"]
-    os.environ["HTTPS_PROXY"] = config["proxies"]["https"]
-
-    paragraphs=srt_summarize.edit(srt)
-    result=srt_summarize.summarize(paragraphs)
-
-    print(result)
-    print(paragraphs)
-    print("总共花了：",time.time()-t0)

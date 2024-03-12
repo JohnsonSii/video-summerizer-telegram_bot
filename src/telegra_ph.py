@@ -109,12 +109,3 @@ def generate_page_navigation(page_urls):
         result['children'].append('|')  
 
     return result
-
-if __name__ == "__main__":
-
-    import pandas as pd
-    access_token="fa9614d3b779af58d2ced86451c1a00d81d24347f0b193b0fd1d0ad44ead"
-    srt=pd.read_csv("d:/abc.csv")
-    title="test"
-    url=publish2telegraph(access_token,title , srt)
-    print('url=', url)

@@ -272,8 +272,3 @@ async def main():
         while True:
             await update_video_pool(conn, video_pool, lock)
     print(video_pool)
-
-
-if __name__ == "__main__":
-    # for test
-    asyncio.run(main())
