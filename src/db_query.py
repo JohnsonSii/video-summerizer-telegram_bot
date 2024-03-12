@@ -1,72 +1,105 @@
-## general database query functions
-
-async  def select_data_from_database(conn, table0, **kwargs):
- 
-    query="SELECT * FROM "+ table0  ## table is a keyword in python, so use table as a variable name is not a good idea
-    conditions=[]
-    values = []
-    for field, value in kwargs.items():
-        conditions.append(f"{field} = ?")
-        values.append(f"{value}")
-        
-    if conditions:
-        query += " WHERE " + " AND ".join(conditions)
-    curr=await conn.execute(query, values)
-    result=await curr.fetchall()
-    await curr.close()
-    return  result
-
-async def delete_data_from_database(conn, table0, **kwargs):
-
-    query="DELETE  FROM "+ table0  ## table is a keyword in python, so use table0 as a variable name is not a good idea
-    conditions=[]
-    values = []
-
-    for field, value in kwargs.items():
-        conditions.append(f"{field} = ?")
-        values.append(f"{value}")
-        
-    query += " WHERE " + " AND ".join(conditions)
-    curr=await conn.execute(query, values)
-    await conn.commit()
-
-    return 
-
-async def insert_data_to_database(conn, table0, **kwargs):
-        
-    fields = ', '.join(kwargs.keys())
-    placeholders = ', '.join(['?'] * len(kwargs))
-    query = f"INSERT INTO {table0} ({fields}) VALUES ({placeholders})"  
-    values = list(kwargs.values())
-
-    #curr.execute(query, values)
-    #conn.commit()
-    async with conn.execute(query, values) as cursor:
-        await conn.commit()
-        return cursor.lastrowid
-
-# update data in database is a little complex
-async def update_data_to_database(conn, table0,  columns, conditions):
-
-    """
-    更新数据库记录。    
-    :param conn: 数据库连接。
-    :param columns: 字典格式的需要更新的列。
-    :param conditions: 字典格式的table的条件。
-    """        
-
-      # 构建 SQL 更新语句
-    update_query = f"UPDATE {table0} SET "
-
-    update_query += ", ".join([f"{column} = ?" for column in columns])
+import MySQLdb
+from typing import List
 
 
-    cc= ' AND '.join([f"{key} = ?" for key in conditions])
+class MySQLClientConnection:
 
-    update_query+= " WHERE " + cc
+    def __init__(self, mysql_info_config):
+        self.conn: MySQLdb.Connection = \
+            MySQLdb.connect(host=mysql_info_config['db_host'],
+                            user=mysql_info_config['db_user'],
+                            password=mysql_info_config['db_password'],
+                            db=mysql_info_config['db_name'],
+                            charset='utf8mb4')
 
-    values = list(columns.values()) + list(conditions.values())
+    def select_data_from_database(self, table0: str, **kwargs):
+        """ Select from data table.
 
-    await conn.execute(update_query, values)
-    await conn.commit()
-    return 
+        Args:+
+            table0 (str): Name of data table
+
+        Returns:
+            Any: List of data objects
+        """
+        query = "SELECT * FROM " + table0
+        conditions = []
+        values = []
+        for field, value in kwargs.items():
+            conditions.append(f"`{field}` = %s")
+            values.append(value)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        with self.conn.cursor(MySQLdb.cursors.DictCursor) as cursor:
+            cursor.execute(query, values)
+            result = cursor.fetchall()
+            self.conn.commit()
+        return result
+
+    def delete_data_from_database(self, table0: str, **kwargs):
+        """ Delete items from data table.
+
+        Args:
+            table0 (str): Name of data table
+        """
+        query = "DELETE FROM " + table0
+        conditions = []
+        values = []
+
+        for field, value in kwargs.items():
+            conditions.append(f"`{field}` = %s")
+            values.append(value)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        with self.conn.cursor() as cursor:
+            cursor.execute(query, values)
+            self.conn.commit()
+
+    def insert_data_to_database(self, table0: str, **kwargs):
+        """ Insert data items to data table.
+
+        Args:
+            table0 (str): Name of data table
+
+        Returns:
+            Any: _description_
+        """
+        fields = ', '.join([f"`{field}`" for field in kwargs.keys()])
+        placeholders = ', '.join(['%s'] * len(kwargs))
+        query = f"INSERT INTO {table0} ({fields}) VALUES ({placeholders})"
+        values = list(kwargs.values())
+
+        with self.conn.cursor() as cursor:
+            cursor.execute(query, values)
+            self.conn.commit()
+            return cursor.lastrowid
+
+    def update_data_to_database(self, table0: str, columns: List[str], conditions: List[str]):
+        """ Update data table
+
+        Args:
+            table0 (str): Name of data table
+            columns (List[str]): Columns of data table
+            conditions (List[str]): Update conditions
+        """
+        update_query = f"UPDATE {table0} SET "
+        update_query += ", ".join([f"`{column}` = %s" for column in columns.keys()])
+        condition_str = ' AND '.join([f"`{key}` = %s" for key in conditions.keys()])
+        update_query += " WHERE " + condition_str
+        values = list(columns.values()) + list(conditions.values())
+
+        with self.conn.cursor() as cursor:
+            cursor.execute(update_query, values)
+            self.conn.commit()
+
+
+if __name__ == '__main__':
+    import json
+
+    config = json.load(open('../../video-summerizer-config.json', 'r', encoding='utf-8'))
+    conn = MySQLClientConnection(config['mysql_info'])
+    result = conn.select_data_from_database('user')
+    print(result)

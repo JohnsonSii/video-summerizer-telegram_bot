@@ -39,7 +39,7 @@ class SrtSummarizer:
 
     def estimate_token_count(self, text):
 
-        return len( self.encoding.encode(text) )   
+        return len(self.encoding.encode(text))   
 
     def estimate_tokens_from_messages(self, messages):   
         # source: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
@@ -86,7 +86,7 @@ class SrtSummarizer:
 
     def split_srt(self, srt):
         ## srt to segmentation
-        token_count = self.max_token_count /3  ## split srt into segments with 1000 tokens
+        token_count = self.max_token_count / 3  ## split srt into segments with 1000 tokens
         tmp = 0
         tmp_str = ''
         result = []
@@ -155,7 +155,7 @@ class SrtSummarizer:
         segments = self.split_srt(srt)
         paragraphs = []
         for seg in segments:
-            paragraphs.append( self.edit_segment(seg[1]) ) ###
+            paragraphs.append(self.edit_segment(seg[1])) ###
         return paragraphs
 
     def summarize(self, paragraphs):

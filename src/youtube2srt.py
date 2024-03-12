@@ -57,7 +57,7 @@ class SubtitleDownloader:
 
     def down_subtitle(self, subtitles):
         results={}
-        langs=["zh-TW", "zh-Hans"]
+        langs=["zh-TW", "zh-Hans", "zh"]
          # 遍历每种语言的字幕，并下载到本地
         proxies={
             "http": os.environ["HTTP_PROXY"],
