@@ -213,6 +213,12 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
                     f"Error: no subtitle found for video {video['title']}, skip this video!")
                 print("This may because it is a live video !")
                 continue
+            
+            try:
+                srt.iterrows()
+            except AttributeError:
+                print("Error: srt is not a pandas dataframe, skip this video!")
+                continue
 
             paragraphs = srt_summarize.edit(srt)
             result = srt_summarize.summarize(paragraphs)
