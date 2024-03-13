@@ -51,7 +51,7 @@ def send_telegram_message(token, chat_id, message):
     response = utils.get_http_responce(url, 'POST', params)
 
     if response.status != 200:
-        raise("Error: telegram message sent failed!")
+        raise ("Error: telegram message sent failed!")
         print(
             f"Error: telegram message sent failed! status_code={response.status}, text={response.text}")
         print("message:\n", message)
@@ -105,7 +105,6 @@ async def get_video_list(conn, channel):
         time_tuple = time.strptime(pubDate, "%Y-%m-%dT%H:%M:%S.%fZ")
         t1 = time.mktime(time_tuple)
 
-
         if t1 <= old_video_time:  # only process video published after last processed video
             break
         if now - t1 > 3600 * 24:  # only process video published in 1 day
@@ -116,7 +115,6 @@ async def get_video_list(conn, channel):
         result.append({"title": item["title"], "link": item["url"], "pubDate": t1, "tg_user_id": channel["tg_user_id"],
                        "channel_name": channel["channel_name"]})  # use timestamp as pubDate
 
-
     return result
 
 
@@ -125,6 +123,10 @@ def video_pool_is_empty(video_pool):
     for channel in video_pool:
         x = x or json.loads(video_pool[channel])
     return not x
+
+
+async def need_update_time(conn, ):
+    ...
 
 
 async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_name: str):
@@ -152,8 +154,9 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
             print(f"video pool for channel {channel} is empty!")
             continue
 
-        user_channel = conn.select_data_from_database("user_channel", channel_url=channel,
-                                                      tg_user_id=videos[0]["tg_user_id"])
+        user_channel = conn.select_data_from_database(
+            "user_channel", channel_url=channel)
+
         if user_channel:
             old_video_time = user_channel[0]["newest_video_time"]
 
@@ -162,7 +165,6 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
         while videos:
 
             video = videos.pop(0)
-            redis_client.hset(video_pool_name, channel, json.dumps(videos))
 
             video_from_database = conn.select_data_from_database(
                 "user_video", video_url=video['link'])
@@ -196,6 +198,7 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
                         conn.insert_data_to_database("user_video", tg_user_id=video['tg_user_id'], video_url=video['link'],
                                                      channel_name=video['channel_name'], title=video['title'], srt_url=srt_url, edit_url=edit_url, result=result)
 
+                redis_client.hset(video_pool_name, channel, json.dumps(videos))
                 continue
 
             if user_channel:
@@ -213,7 +216,7 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
                     f"Error: no subtitle found for video {video['title']}, skip this video!")
                 print("This may because it is a live video !")
                 continue
-            
+
             try:
                 srt.iterrows()
             except AttributeError:
@@ -249,7 +252,8 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
             conn.insert_data_to_database("user_video", tg_user_id=video['tg_user_id'], video_url=video['link'],
                                          channel_name=video['channel_name'], title=video['title'], srt_url=srt_url, edit_url=edit_url, result=result)
 
+            redis_client.hset(video_pool_name, channel, json.dumps(videos))
+
         if new_video_time > 0:
             conn.update_data_to_database("user_channel", {"newest_video_time": new_video_time},
-                                         {"tg_user_id": video["tg_user_id"], "channel_url": channel})
-
+                                         {"channel_url": channel})
