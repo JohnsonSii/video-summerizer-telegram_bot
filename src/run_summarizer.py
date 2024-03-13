@@ -7,7 +7,14 @@ import time
 
 from db_query import *
 # import aiosqlite
+import argparse
 
+parser = argparse.ArgumentParser(
+    prog='RunBot',
+    description='Telegram bot for video summarization')
+
+parser.add_argument('-c', '--config', type=str)
+args = parser.parse_args()
 
 # 每个任务建一个异步数据库连接更合适（连接数并不多）
 # async def init_db(db_path):
@@ -19,7 +26,7 @@ from db_query import *
 async def main():
     import os
 
-    path = "../video-summerizer-config.json"
+    path = args.config
 
     # read config file with encoding detection
     config = json.load(open(path, 'r', encoding='utf-8'))

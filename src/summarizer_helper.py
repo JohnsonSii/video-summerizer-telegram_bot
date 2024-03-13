@@ -36,6 +36,7 @@ async def video_summerizer_task(config, redis_client, video_pool_name):
         await video_summerizer(conn, config, redis_client, video_pool_name)
 
 
+@utils.retry(retries=4, delay=1)
 def send_telegram_message(token, chat_id, message):
     """
     给 Telegram 用户发送消息。
@@ -53,6 +54,7 @@ def send_telegram_message(token, chat_id, message):
         print(
             f"Error: telegram message sent failed! status_code={response.status}, text={response.text}")
         print("message:\n", message)
+        raise("Error: telegram message sent failed! status_code={response.status}, text={response.text}")
     return response
 
 
