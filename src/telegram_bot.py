@@ -325,5 +325,5 @@ class Bot:
     def run(self):
         # Run the bot until the user presses Ctrl-C
 
-        self.application.run_polling(allowed_updates=Update.ALL_TYPES)
+        self.application.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=0.1, connect_timeout=30.0)
         
