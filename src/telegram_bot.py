@@ -319,7 +319,7 @@ class Bot:
     
     def error_callback(self, update, context):
         logger.warning('Update "%s" caused error "%s"', update, context.error)
-        logger.warning('Update is running: %s', self.application.updater.running)
+        logger.warning('Update is running: %s', self.application.updater.is_idle())
 
 
     def run(self):
