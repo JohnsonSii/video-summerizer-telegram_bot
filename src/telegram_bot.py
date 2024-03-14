@@ -1,4 +1,5 @@
 import logging
+import httpx
 import redis
 
 from telegram import __version__ as TG_VER
@@ -319,7 +320,20 @@ class Bot:
     
     def error_callback(self, update, context):
         logger.warning('Update "%s" caused error "%s"', update, context.error)
-        logger.warning('Update is running: %s', self.application.updater.is_idle())
+
+        # 如果出现网络相关的错误，则尝试重新启动机器人
+        if isinstance(context.error, httpx.RemoteProtocolError):
+            logger.error("Attempting to restart the bot...")
+            self.restart_bot()
+
+    def restart_bot(self):
+        # 停止机器人
+        self.application.updater.stop()
+
+        # 重新启动机器人
+        logger.info("Restarting the bot...")
+        self.run()
+
 
 
     def run(self):
