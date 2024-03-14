@@ -165,6 +165,7 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
         while videos:
 
             video = videos.pop(0)
+            redis_client.hset(video_pool_name, channel, json.dumps(videos))
 
             video_from_database = conn.select_data_from_database(
                 "user_video", video_url=video['link'])
@@ -198,7 +199,6 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
                         conn.insert_data_to_database("user_video", tg_user_id=video['tg_user_id'], video_url=video['link'],
                                                      channel_name=video['channel_name'], title=video['title'], srt_url=srt_url, edit_url=edit_url, result=result)
 
-                redis_client.hset(video_pool_name, channel, json.dumps(videos))
                 continue
 
             if user_channel:
@@ -209,8 +209,12 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
 
                 if video["pubDate"] > new_video_time:
                     new_video_time = video["pubDate"]
+            try:
+                srt = downloader.get_subtitles(video["link"])
+            except:
+                print("srt has error, skip this video!")
+                continue
 
-            srt = downloader.get_subtitles(video["link"])
             if srt is None:
                 print(
                     f"Error: no subtitle found for video {video['title']}, skip this video!")
@@ -251,8 +255,6 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
             # 将处理完的视频和相关数据保存到数据库
             conn.insert_data_to_database("user_video", tg_user_id=video['tg_user_id'], video_url=video['link'],
                                          channel_name=video['channel_name'], title=video['title'], srt_url=srt_url, edit_url=edit_url, result=result)
-
-            redis_client.hset(video_pool_name, channel, json.dumps(videos))
 
         if new_video_time > 0:
             conn.update_data_to_database("user_channel", {"newest_video_time": new_video_time},
