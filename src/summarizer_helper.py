@@ -125,9 +125,6 @@ def video_pool_is_empty(video_pool):
     return not x
 
 
-async def need_update_time(conn, ):
-    ...
-
 
 async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_name: str):
     video_pool = redis_client.hgetall(video_pool_name)
@@ -184,6 +181,8 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
 
                 res = send_telegram_message(
                     config["telegram_bot"]["token"], video["tg_user_id"], tg_message)
+                if res is None:
+                    continue
                 if res.status != 200:
                     print(
                         f"Error: telegram message sent failed! status_code={res.status}, text={res.text}")
@@ -244,6 +243,8 @@ async def video_summerizer(conn, config, redis_client: redis.Redis, video_pool_n
 
             res = send_telegram_message(
                 config["telegram_bot"]["token"], video["tg_user_id"], tg_message)
+            if res is None:
+                continue
             if res.status != 200:
                 print(
                     f"Error: telegram message sent failed! status_code={res.status}, text={res.text}")
