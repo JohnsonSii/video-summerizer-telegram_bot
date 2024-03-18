@@ -13,6 +13,16 @@ class MySQLClientConnection:
                             db=mysql_info_config['db_name'],
                             charset='utf8mb4')
 
+    def ping(self, func):
+        def inner(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except MySQLdb.OperationalError:
+                self.conn.ping(True)
+                return func(*args, **kwargs)
+        return inner
+
+    @ping
     def select_data_from_database(self, table0: str, **kwargs):
         """ Select from data table.
 
@@ -38,6 +48,7 @@ class MySQLClientConnection:
             self.conn.commit()
         return result
 
+    @ping
     def delete_data_from_database(self, table0: str, **kwargs):
         """ Delete items from data table.
 
@@ -59,6 +70,7 @@ class MySQLClientConnection:
             cursor.execute(query, values)
             self.conn.commit()
 
+    @ping
     def insert_data_to_database(self, table0: str, **kwargs):
         """ Insert data items to data table.
 
@@ -78,6 +90,7 @@ class MySQLClientConnection:
             self.conn.commit()
             return cursor.lastrowid
 
+    @ping
     def update_data_to_database(self, table0: str, columns: List[str], conditions: List[str]):
         """ Update data table
 
@@ -87,12 +100,13 @@ class MySQLClientConnection:
             conditions (List[str]): Update conditions
         """
         update_query = f"UPDATE {table0} SET "
-        update_query += ", ".join([f"`{column}` = %s" for column in columns.keys()])
-        condition_str = ' AND '.join([f"`{key}` = %s" for key in conditions.keys()])
+        update_query += ", ".join(
+            [f"`{column}` = %s" for column in columns.keys()])
+        condition_str = ' AND '.join(
+            [f"`{key}` = %s" for key in conditions.keys()])
         update_query += " WHERE " + condition_str
         values = list(columns.values()) + list(conditions.values())
 
         with self.conn.cursor() as cursor:
             cursor.execute(update_query, values)
             self.conn.commit()
-
