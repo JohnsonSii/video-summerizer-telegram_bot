@@ -15,7 +15,7 @@ import json
 
 from telegram import __version_info__
 
-CHECK_INTERVAL = 1
+CHECK_INTERVAL = 5
 
 if __version_info__ < (20, 0, 0, "alpha", 5):
     raise RuntimeError(
