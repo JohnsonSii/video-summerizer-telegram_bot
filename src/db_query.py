@@ -18,10 +18,10 @@ class MySQLClientConnection:
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
-                return func(self, *args, **kwargs)
+                return func(*args, **kwargs)
             except MySQLdb.OperationalError:
                 self.conn.ping(True)
-                return func(self, *args, **kwargs)
+                return func(*args, **kwargs)
         return wrapper
 
     @ping
