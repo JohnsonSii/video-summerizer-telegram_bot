@@ -15,7 +15,7 @@ class MySQLClientConnection:
                             charset='utf8mb4')
 
     def ping(self, func):
-        @wraps
+        @wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 return func(self, *args, **kwargs)
