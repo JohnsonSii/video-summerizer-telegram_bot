@@ -1,5 +1,6 @@
 import MySQLdb
 from typing import List
+from functools import wraps
 
 
 class MySQLClientConnection:
@@ -14,13 +15,14 @@ class MySQLClientConnection:
                             charset='utf8mb4')
 
     def ping(self, func):
-        def inner(*args, **kwargs):
+        @wraps
+        def wrapper(*args, **kwargs):
             try:
-                return func(*args, **kwargs)
+                return func(self, *args, **kwargs)
             except MySQLdb.OperationalError:
                 self.conn.ping(True)
-                return func(*args, **kwargs)
-        return inner
+                return func(self, *args, **kwargs)
+        return wrapper
 
     @ping
     def select_data_from_database(self, table0: str, **kwargs):
