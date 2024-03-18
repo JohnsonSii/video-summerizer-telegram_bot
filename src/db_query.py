@@ -14,17 +14,6 @@ class MySQLClientConnection:
                             db=mysql_info_config['db_name'],
                             charset='utf8mb4')
 
-    def ping(self, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except MySQLdb.OperationalError:
-                self.conn.ping(True)
-                return func(*args, **kwargs)
-        return wrapper
-
-    @ping
     def select_data_from_database(self, table0: str, **kwargs):
         """ Select from data table.
 
@@ -34,6 +23,7 @@ class MySQLClientConnection:
         Returns:
             Any: List of data objects
         """
+        self.conn.ping()
         query = "SELECT * FROM " + table0
         conditions = []
         values = []
@@ -50,13 +40,13 @@ class MySQLClientConnection:
             self.conn.commit()
         return result
 
-    @ping
     def delete_data_from_database(self, table0: str, **kwargs):
         """ Delete items from data table.
 
         Args:
             table0 (str): Name of data table
         """
+        self.conn.ping()
         query = "DELETE FROM " + table0
         conditions = []
         values = []
@@ -72,7 +62,6 @@ class MySQLClientConnection:
             cursor.execute(query, values)
             self.conn.commit()
 
-    @ping
     def insert_data_to_database(self, table0: str, **kwargs):
         """ Insert data items to data table.
 
@@ -82,6 +71,7 @@ class MySQLClientConnection:
         Returns:
             Any: _description_
         """
+        self.conn.ping()
         fields = ', '.join([f"`{field}`" for field in kwargs.keys()])
         placeholders = ', '.join(['%s'] * len(kwargs))
         query = f"INSERT INTO {table0} ({fields}) VALUES ({placeholders})"
@@ -92,7 +82,6 @@ class MySQLClientConnection:
             self.conn.commit()
             return cursor.lastrowid
 
-    @ping
     def update_data_to_database(self, table0: str, columns: List[str], conditions: List[str]):
         """ Update data table
 
@@ -101,6 +90,7 @@ class MySQLClientConnection:
             columns (List[str]): Columns of data table
             conditions (List[str]): Update conditions
         """
+        self.conn.ping()
         update_query = f"UPDATE {table0} SET "
         update_query += ", ".join(
             [f"`{column}` = %s" for column in columns.keys()])

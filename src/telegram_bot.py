@@ -15,6 +15,8 @@ import json
 
 from telegram import __version_info__
 
+CHECK_INTERVAL = 60
+
 if __version_info__ < (20, 0, 0, "alpha", 5):
     raise RuntimeError(
         f"This example is not compatible with your current PTB version {TG_VER}. To view the "
@@ -338,6 +340,12 @@ class Bot:
 
     def run(self):
         # Run the bot until the user presses Ctrl-C
-
         self.application.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=0.1, connect_timeout=30.0)
+        while True:
+            try:
+                self.application.bot.get_me()
+                time.sleep(CHECK_INTERVAL)
+            except:
+                self.application.stop_running()
+                self.application.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=0.1, connect_timeout=30.0)
         
