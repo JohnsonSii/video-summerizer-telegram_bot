@@ -20,6 +20,5 @@ if __name__ == "__main__":
     os.environ["HTTP_PROXY"] = config["proxies"]["http"]
     os.environ["HTTPS_PROXY"] = config["proxies"]["https"]
     bot = Bot(config["telegram_bot"]['token'], config['mysql_info'], config['redis_info'])
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(bot.run())
+    
+    bot.run()

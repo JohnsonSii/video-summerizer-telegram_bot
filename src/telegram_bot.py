@@ -334,16 +334,16 @@ class Bot:
 
         # 重新启动机器人
         logger.info("Restarting the bot...")
-        self.run()
+        self.run() 
 
 
-
-    async def run(self):
+    def run(self):
         # Run the bot until the user presses Ctrl-C
         self.application.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=0.1, connect_timeout=30.0)
         while True:
             try:
-                await self.application.bot.get_me()
+                asyncio.get_event_loop().run_until_complete(self.application.bot.get_me())
+                # self.application.bot.get_me()
                 time.sleep(CHECK_INTERVAL)
             except:
                 self.application.stop_running()
