@@ -1,11 +1,11 @@
 import MySQLdb
 from typing import List
-from functools import wraps
 
 
 class MySQLClientConnection:
 
     def __init__(self, mysql_info_config):
+        self.mysql_info_config = mysql_info_config
         self.conn: MySQLdb.Connection = \
             MySQLdb.connect(host=mysql_info_config['db_host'],
                             user=mysql_info_config['db_user'],
@@ -14,6 +14,24 @@ class MySQLClientConnection:
                             db=mysql_info_config['db_name'],
                             charset='utf8mb4')
 
+    def error_reconnection(func):
+        def wrapper(self, *args, **kwargs):
+            try:
+                self.conn.ping()
+            except MySQLdb.OperationalError:
+                self.conn = \
+                    MySQLdb.connect(host=self.mysql_info_config['db_host'],
+                                    user=self.mysql_info_config['db_user'],
+                                    port=self.mysql_info_config['db_port'],
+                                    password=self.mysql_info_config['db_password'],
+                                    db=self.mysql_info_config['db_name'],
+                                    charset='utf8mb4')
+
+            return func(self, *args, **kwargs)
+
+        return wrapper
+
+    @error_reconnection
     def select_data_from_database(self, table0: str, **kwargs):
         """ Select from data table.
 
@@ -23,7 +41,6 @@ class MySQLClientConnection:
         Returns:
             Any: List of data objects
         """
-        self.conn.ping()
         query = "SELECT * FROM " + table0
         conditions = []
         values = []
@@ -40,13 +57,13 @@ class MySQLClientConnection:
             self.conn.commit()
         return result
 
+    @error_reconnection
     def delete_data_from_database(self, table0: str, **kwargs):
         """ Delete items from data table.
 
         Args:
             table0 (str): Name of data table
         """
-        self.conn.ping()
         query = "DELETE FROM " + table0
         conditions = []
         values = []
@@ -62,6 +79,7 @@ class MySQLClientConnection:
             cursor.execute(query, values)
             self.conn.commit()
 
+    @error_reconnection
     def insert_data_to_database(self, table0: str, **kwargs):
         """ Insert data items to data table.
 
@@ -71,7 +89,6 @@ class MySQLClientConnection:
         Returns:
             Any: _description_
         """
-        self.conn.ping()
         fields = ', '.join([f"`{field}`" for field in kwargs.keys()])
         placeholders = ', '.join(['%s'] * len(kwargs))
         query = f"INSERT INTO {table0} ({fields}) VALUES ({placeholders})"
@@ -82,6 +99,7 @@ class MySQLClientConnection:
             self.conn.commit()
             return cursor.lastrowid
 
+    @error_reconnection
     def update_data_to_database(self, table0: str, columns: List[str], conditions: List[str]):
         """ Update data table
 
@@ -90,7 +108,6 @@ class MySQLClientConnection:
             columns (List[str]): Columns of data table
             conditions (List[str]): Update conditions
         """
-        self.conn.ping()
         update_query = f"UPDATE {table0} SET "
         update_query += ", ".join(
             [f"`{column}` = %s" for column in columns.keys()])
