@@ -1,3 +1,4 @@
+import asyncio
 from telegram_bot import Bot
 import json
 import os
@@ -20,4 +21,5 @@ if __name__ == "__main__":
     os.environ["HTTPS_PROXY"] = config["proxies"]["https"]
     bot = Bot(config["telegram_bot"]['token'], config['mysql_info'], config['redis_info'])
 
-    bot.run()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(bot.run())

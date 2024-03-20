@@ -338,12 +338,12 @@ class Bot:
 
 
 
-    def run(self):
+    async def run(self):
         # Run the bot until the user presses Ctrl-C
         self.application.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=0.1, connect_timeout=30.0)
         while True:
             try:
-                self.application.bot.get_me()
+                await self.application.bot.get_me()
                 time.sleep(CHECK_INTERVAL)
             except:
                 self.application.stop_running()
