@@ -322,6 +322,8 @@ class Bot:
     
     def error_callback(self, update, context):
         logger.warning('Update "%s" caused error "%s"', update, context.error)
+        self.application.stop_running()
+        self.application.run_polling(allowed_updates=Update.ALL_TYPES, poll_interval=0.1, connect_timeout=30.0)
 
         # 如果出现网络相关的错误，则尝试重新启动机器人
         if isinstance(context.error, httpx.RemoteProtocolError):
