@@ -1,5 +1,5 @@
 import asyncio
-from telegram_bot import Bot
+from telegram_bot import VideoBot
 import json
 import os
 import argparse
@@ -19,6 +19,9 @@ if __name__ == "__main__":
 
     os.environ["HTTP_PROXY"] = config["proxies"]["http"]
     os.environ["HTTPS_PROXY"] = config["proxies"]["https"]
-    bot = Bot(config["telegram_bot"]['token'], config['mysql_info'], config['redis_info'])
+    # bot = Bot(config["telegram_bot"]['token'], config['mysql_info'], config['redis_info'])
+
+    video_bot  = VideoBot(config["telegram_bot"]['token'], config['mysql_info'], config['redis_info'])
+    asyncio.run(video_bot.run())
     
-    bot.run()
+    # bot.run()
